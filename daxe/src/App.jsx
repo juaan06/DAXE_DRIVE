@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { VISTAS } from '../controllers/vistas.js';
 import LoginView from '../views/login.jsx';
+import CrearCuentaView from '../views/crearCuenta.jsx';
 
 function ActualizarTitulo() {
   const { pathname } = useLocation();
@@ -20,8 +21,8 @@ export default function App() {
     <HashRouter>
       <ActualizarTitulo />
       <Routes>
-        <Route path={VISTAS.LOGIN} element={<LoginView modo="login" />} />
-        <Route path={VISTAS.CREAR_CUENTA} element={<LoginView modo="crear-cuenta" />} />
+        <Route path={VISTAS.LOGIN} element={<LoginView />} />
+        <Route path={VISTAS.CREAR_CUENTA} element={<CrearCuentaView />} />
         <Route path="*" element={<Navigate to={VISTAS.LOGIN} replace />} />
       </Routes>
     </HashRouter>
