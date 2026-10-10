@@ -3,13 +3,14 @@ import { VISTAS } from '../controllers/vistas.js';
 import { TIEMPOS_VIDEO } from '../src/config/tiemposVideo.js';
 
 const configCrearCuenta = {
+  tipo: 'register',
   titulo: 'Crea tu cuenta',
   descripcion: 'Empieza a moverte con una ruta más clara.',
   etiquetaEnvio: 'Crear cuenta',
   textoAlterno: '¿Ya tienes una cuenta?',
   enlaceAlterno: 'Inicia sesión',
   rutaAlterna: VISTAS.LOGIN,
-  mensajeEnvio: 'El formulario está listo. La conexión para crear tu cuenta se añadirá en la siguiente etapa.',
+  mensajeEnvio: 'Creando tu cuenta...',
   tiempoEnvio: TIEMPOS_VIDEO.CREAR_CUENTA.ENVIO,
   campos: [
     {

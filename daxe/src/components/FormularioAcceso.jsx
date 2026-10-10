@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import VideoAcceso from './VideoAcceso.jsx';
+import { loginUser, registerUser } from '../services/authService.js';
+import { VISTAS } from '../../controllers/vistas.js';
 
 function obtenerTiempoObjetivo(campos, valores, enviado, tiempoEnvio) {
   if (enviado) {
@@ -59,6 +61,7 @@ function CampoAcceso({ campo, visible, onAlternar, onChange, inputRef }) {
 }
 
 export default function FormularioAcceso({ config }) {
+  const navigate = useNavigate();
   const [valores, setValores] = useState(() => Object.fromEntries(
     config.campos.map((campo) => [campo.name, '']),
   ));
@@ -96,14 +99,54 @@ export default function FormularioAcceso({ config }) {
     }
   };
 
-  const manejarEnvio = (event) => {
+  const manejarEnvio = async (event) => {
     event.preventDefault();
     if (!event.currentTarget.reportValidity()) {
       return;
     }
 
+    const payload = Object.fromEntries(
+      config.campos
+        .filter((campo) => campo.name !== 'confirmar-contrasena')
+        .map((campo) => [campo.name, valores[campo.name]]),
+    );
+
     setEnviado(true);
     setEstado(config.mensajeEnvio);
+
+    try {
+      const respuesta = config.tipo === 'register'
+        ? await registerUser({
+          name: payload.nombre || '',
+          email: payload.correo,
+          password: payload.contrasena,
+        })
+        : await loginUser({
+          email: payload.correo,
+          password: payload.contrasena,
+        });
+
+      const token = respuesta?.data?.token;
+      if (token) {
+        localStorage.setItem('daxe_token', token);
+      }
+
+      if (respuesta?.data?.user) {
+        localStorage.setItem('daxe_user', JSON.stringify(respuesta.data.user));
+      }
+
+      setEstado(respuesta?.message || 'Operación completada.');
+
+      if (config.tipo === 'register') {
+        navigate('/login', { replace: true });
+        return;
+      }
+
+      navigate('/dashboard', { replace: true });
+    } catch (error) {
+      setEnviado(false);
+      setEstado(error?.message || 'No se pudo completar la operación.');
+    }
   };
 
   return (
@@ -111,7 +154,7 @@ export default function FormularioAcceso({ config }) {
       <VideoAcceso tiempoObjetivo={tiempoObjetivo} />
 
       <Link
-        to="/login"
+        to={config.rutaAlterna}
         aria-label="DAXE, ir al inicio"
         className="absolute left-[clamp(24px,5vw,72px)] top-[30px] z-10 text-[26px] font-extrabold tracking-[0.11em] text-white"
       >
@@ -181,6 +224,11 @@ export default function FormularioAcceso({ config }) {
             className="font-semibold text-blue-300 hover:text-blue-200 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
           >
             {config.enlaceAlterno}
+          </Link>
+        </p>
+        <p className="mt-4 text-center text-sm">
+          <Link to={VISTAS.MAPA} className="font-semibold text-blue-300 hover:text-blue-200 hover:underline">
+            Probar el mapa como invitado
           </Link>
         </p>
         <p className="mt-[21px] text-center text-[11px] leading-relaxed text-[#a5a1af]">
